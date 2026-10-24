@@ -2,7 +2,7 @@
 apiVersion: eks.amazonaws.com/v1
 kind: IngressClassParams
 metadata:
-  name: internal
+  name: alb-internal
 spec:
   scheme: internal
 ---
@@ -18,4 +18,4 @@ spec:
   parameters:
     apiGroup: eks.amazonaws.com
     kind: IngressClassParams
-    name: internal
+    name: alb-internal

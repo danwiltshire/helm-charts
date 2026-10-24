@@ -2,7 +2,7 @@
 apiVersion: eks.amazonaws.com/v1
 kind: IngressClassParams
 metadata:
-  name: internet-facing
+  name: alb-internet-facing
 spec:
   scheme: internet-facing
 ---
@@ -11,11 +11,11 @@ kind: IngressClass
 metadata:
   name: alb-internet-facing
   annotations:
-    # The internal scheme is default, see alb-ingressclass-internal.yaml.
+    # alb-internal is the default, see internal.yaml.
     ingressclass.kubernetes.io/is-default-class: "false"
 spec:
   controller: eks.amazonaws.com/alb
   parameters:
     apiGroup: eks.amazonaws.com
     kind: IngressClassParams
-    name: internet-facing
+    name: alb-internet-facing
