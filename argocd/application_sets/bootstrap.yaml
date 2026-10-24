@@ -1,24 +1,24 @@
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
-  name: cluster-addons
+  name: bootstrap
   namespace: argocd
 spec:
   goTemplate: true
   goTemplateOptions: ["missingkey=error"]
   generators:
   - git:
-      repoURL: https://github.com/argoproj/argo-cd.git
+      repoURL: https://github.com/danwiltshire/helm-charts.git
       revision: HEAD
       directories:
-      - path: applicationset/examples/git-generator-directory/cluster-addons/*
+      - path: bootstrap/*
   template:
     metadata:
       name: '{{.path.basename}}'
     spec:
-      project: "my-project"
+      project: "bootstrap"
       source:
-        repoURL: https://github.com/argoproj/argo-cd.git
+        repoURL: https://github.com/danwiltshire/helm-charts.git
         targetRevision: HEAD
         path: '{{.path.path}}'
       destination:
