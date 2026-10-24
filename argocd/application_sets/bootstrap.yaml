@@ -7,22 +7,25 @@ spec:
   goTemplate: true
   goTemplateOptions: ["missingkey=error"]
   generators:
-  - git:
-      repoURL: https://github.com/danwiltshire/helm-charts.git
-      revision: HEAD
-      directories:
-      - path: bootstrap/*
+  - matrix:
+      generators:
+      - clusters: {}
+      - git:
+          repoURL: https://github.com/danwiltshire/helm-charts.git
+          revision: HEAD
+          directories:
+          - path: bootstrap/*
   template:
     metadata:
-      name: '{{.path.basename}}'
+      name: '{{.name}}-{{.path.basename}}'
     spec:
-      project: "bootstrap"
+      project: default
       source:
         repoURL: https://github.com/danwiltshire/helm-charts.git
         targetRevision: HEAD
         path: '{{.path.path}}'
       destination:
-        server: https://kubernetes.default.svc
+        server: '{{.server}}'
         namespace: '{{.path.basename}}'
       syncPolicy:
         syncOptions:
