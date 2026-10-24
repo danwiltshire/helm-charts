@@ -1,0 +1,21 @@
+---
+apiVersion: eks.amazonaws.com/v1
+kind: IngressClassParams
+metadata:
+  name: internal
+spec:
+  scheme: internal
+---
+apiVersion: networking.k8s.io/v1
+kind: IngressClass
+metadata:
+  name: alb
+  annotations:
+    # The internal scheme is default.
+    ingressclass.kubernetes.io/is-default-class: "true"
+spec:
+  controller: eks.amazonaws.com/alb
+  parameters:
+    apiGroup: eks.amazonaws.com
+    kind: IngressClassParams
+    name: internal
