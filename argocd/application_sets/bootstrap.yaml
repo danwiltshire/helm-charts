@@ -28,5 +28,14 @@ spec:
         server: '{{.server}}'
         namespace: '{{.path.basename}}'
       syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
         syncOptions:
         - CreateNamespace=true
+        retry:
+          limit: 5
+          backoff:
+            duration: 30s
+            factor: 2
+            maxDuration: 5m
