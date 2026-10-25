@@ -16,7 +16,11 @@ spec:
       source:
         repoURL: https://github.com/danwiltshire/helm-charts.git
         targetRevision: HEAD
-        path: bootstrap
+        path: apps/bootstrap
+        helm:
+          valueFiles:
+          - values.yaml
+          - 'envs/{{index .metadata.labels "env"}}.yaml'
       destination:
         server: '{{.server}}'
       syncPolicy:
