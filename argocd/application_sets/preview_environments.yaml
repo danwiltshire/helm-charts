@@ -40,7 +40,7 @@ spec:
           - name: domainName
             value: '{{.values.app}}-{{.number}}.preview.danforge.net'
       destination:
-        name: in-cluster
+        name: nonprod
         namespace: '{{.values.app}}-pr-{{.number}}'
       syncPolicy:
         automated:
