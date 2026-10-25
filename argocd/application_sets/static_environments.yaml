@@ -1,0 +1,41 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: static-environments
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+  - git:
+      repoURL: https://github.com/danwiltshire/helm-charts.git
+      revision: HEAD
+      files:
+      - path: apps/*/envs/*.yaml
+      # preview.yaml is owned by the preview_environments ApplicationSet.
+      - path: apps/*/envs/preview.yaml
+        exclude: true
+      values:
+        app: '{{index .path.segments 1}}'
+        env: '{{trimSuffix ".yaml" .path.filename}}'
+  template:
+    metadata:
+      name: '{{.values.app}}-{{.values.env}}'
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/danwiltshire/helm-charts.git
+        targetRevision: HEAD
+        path: 'apps/{{.values.app}}'
+        helm:
+          valueFiles:
+          - 'envs/{{.values.env}}.yaml'
+      destination:
+        name: in-cluster
+        namespace: '{{.values.app}}-{{.values.env}}'
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+        - CreateNamespace=true

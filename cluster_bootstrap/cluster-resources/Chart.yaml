@@ -1,0 +1,5 @@
+apiVersion: v2
+name: cluster-resources
+description: EKS Auto Mode ingress and storage resources for cluster setup
+type: application
+version: 0.1.0

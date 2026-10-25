@@ -1,0 +1,18 @@
+repositories:
+  - name: kedacore
+    url: https://kedacore.github.io/charts
+
+releases:
+  - name: cluster-resources
+    namespace: kube-system
+    chart: ./cluster-resources
+    createNamespace: false
+    wait: true
+
+  - name: keda
+    namespace: keda
+    chart: kedacore/keda
+    version: 2.21.0
+    createNamespace: true
+    wait: true
+    timeout: 600

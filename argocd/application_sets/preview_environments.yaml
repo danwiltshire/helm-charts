@@ -1,2 +1,50 @@
-# https://github.com/argoproj/argo-cd/pull/26614
-# Not released yet, nor available in EKS Argo CD capability.
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: preview-environments
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+  - matrix:
+      generators:
+      - git:
+          repoURL: https://github.com/danwiltshire/helm-charts.git
+          revision: HEAD
+          files:
+          - path: apps/*/envs/preview.yaml
+          values:
+            app: '{{index .path.segments 1}}'
+      # Assumes each app's source repo is named after its directory under apps/.
+      - pullRequest:
+          github:
+            owner: danwiltshire
+            repo: '{{.values.app}}'
+            labels:
+            - preview
+          requeueAfterSeconds: 1800
+  template:
+    metadata:
+      name: '{{.values.app}}-pr-{{.number}}'
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/danwiltshire/helm-charts.git
+        targetRevision: HEAD
+        path: 'apps/{{.values.app}}'
+        helm:
+          valueFiles:
+          - envs/preview.yaml
+          parameters:
+          - name: domainName
+            value: '{{.values.app}}-{{.number}}.preview.danforge.net'
+      destination:
+        name: in-cluster
+        namespace: '{{.values.app}}-pr-{{.number}}'
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+        - CreateNamespace=true

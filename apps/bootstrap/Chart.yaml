@@ -1,9 +1,0 @@
-apiVersion: v2
-name: bootstrap-app
-description: Per-environment wrapper for the bootstrap chart
-type: application
-version: 0.1.0
-dependencies:
-- name: bootstrap
-  version: 0.1.0
-  repository: file://../../charts/bootstrap
