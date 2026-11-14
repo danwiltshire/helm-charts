@@ -39,6 +39,8 @@ spec:
           parameters:
           - name: domainName
             value: '{{.values.app}}-{{.number}}.preview.danforge.net'
+          - name: imageTag
+            value: '{{.head_sha | trunc 7}}'
       destination:
         name: nonprod
         namespace: '{{.values.app}}-pr-{{.number}}'

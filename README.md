@@ -35,6 +35,15 @@ The context must point to the cluster hosting the relevant Argo CD control plane
 > [!IMPORTANT]
 > Before applying an ApplicationSet, its destination cluster must be registered with that Argo CD installation. The cluster Secret must be in the `argocd` namespace, have the label `argocd.argoproj.io/secret-type: cluster`, and include `name`, `server`, and `project` values. Set `name` to exactly `prod` or `nonprod` to match the ApplicationSet destination, and `project` to `default`. For a standard Argo CD cluster registration, `server` is the cluster's Kubernetes API endpoint URL. The EKS Argo CD capability also supports using the EKS cluster ARN as `server`; follow the registration format supported by your capability. AWS recommends using `destination.name` for readability, with the registered cluster name as its value. The Secret's Kubernetes metadata name can be a unique identifier. An `env` label is optional for these ApplicationSets because they don't use a cluster generator.
 
+Preview applications use pull requests labeled `preview` from a GitHub repository named after the app directory. The ApplicationSet overrides `domainName` and `imageTag`, setting the latter to the seven-character PR head SHA; the corresponding image must already be published.
+
+The books image repository is configured separately in each file under `apps/k8s-books/envs/`. The staging image is selected by `imageTag` in `apps/k8s-books/envs/staging.yaml`; update it to a published tag to deploy another version. To render a preview locally, supply the values normally provided by the ApplicationSet:
+
+```sh
+helm template books apps/k8s-books -f apps/k8s-books/envs/preview.yaml \
+  --set imageTag=f6775c6 --set domainName=k8s-books-123.preview.danforge.net
+```
+
 ## Developing
 
 ### Prerequisites
