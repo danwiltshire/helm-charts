@@ -1,2 +1,3 @@
+# yaml-language-server: $schema=../values.schema.json
 domainName: k8s-books.danforge.net
 imageTag: "f602448"

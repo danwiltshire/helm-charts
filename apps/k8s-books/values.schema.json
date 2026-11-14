@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "global": {
+      "description": "Global values are values that can be accessed from any chart or subchart by exactly the same name.",
+      "required": [],
+      "title": "global",
+      "type": "object"
+    },
+    "imageRepository": {
+      "default": "426576223955.dkr.ecr.eu-west-2.amazonaws.com/k8s-books",
+      "description": "yaml-language-server: $schema=values.schema.json",
+      "title": "imageRepository",
+      "type": "string"
+    },
+    "imageTag": {
+      "default": "",
+      "title": "imageTag",
+      "type": "string"
+    }
+  },
+  "required": [],
+  "type": "object"
+}

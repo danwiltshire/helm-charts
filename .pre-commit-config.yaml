@@ -5,12 +5,25 @@ repos:
     hooks:
       - id: helm-docs
         args:
-          # Make the tool search for charts only under the `charts` directory
-          - --chart-search-root=charts
+          # Make the tool search for charts only under the `apps` directory
+          - --chart-search-root=apps
 
   - repo: https://github.com/dadav/helm-schema
     rev: 0.24.0
     hooks:
       - id: helm-schema
         pass_filenames: false
-        args: [--chart-search-root=charts, --keep-existing-dep-schemas]
+        args:
+          - --chart-search-root=apps
+          - --keep-existing-dep-schemas
+          - --add-schema-reference
+          # Environment overrides are partial and may define additional values.
+          - --skip-auto-generation=additionalProperties,required
+
+  - repo: local
+    hooks:
+      - id: env-schema-reference
+        name: add schema reference to env values files
+        entry: scripts/add-env-schema-reference.sh
+        language: script
+        files: ^apps/[^/]+/envs/[^/]+\.ya?ml$
