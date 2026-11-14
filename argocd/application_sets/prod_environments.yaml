@@ -10,6 +10,7 @@ spec:
   - git:
       repoURL: https://github.com/danwiltshire/helm-charts.git
       revision: HEAD
+      requeueAfterSeconds: 60
       files:
       - path: apps/*/envs/prod.yaml
       values:

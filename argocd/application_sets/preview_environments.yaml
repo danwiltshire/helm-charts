@@ -12,6 +12,7 @@ spec:
       - git:
           repoURL: https://github.com/danwiltshire/helm-charts.git
           revision: HEAD
+          requeueAfterSeconds: 60
           files:
           - path: apps/*/envs/preview.yaml
           values:
@@ -23,7 +24,7 @@ spec:
             repo: '{{.values.app}}'
             labels:
             - preview
-          requeueAfterSeconds: 1800
+          requeueAfterSeconds: 60
   template:
     metadata:
       name: '{{.values.app}}-pr-{{.number}}'

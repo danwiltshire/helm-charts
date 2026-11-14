@@ -40,6 +40,8 @@ The ApplicationSets label their managed namespaces with `eks.amazonaws.com/pod-r
 
 Preview applications use pull requests labeled `preview` from a GitHub repository named after the app directory. The ApplicationSet overrides `domainName` and `imageTag`, setting the latter to the seven-character PR head SHA; the corresponding image must already be published.
 
+The ApplicationSet Git generators and preview pull request generator poll every 60 seconds. Git revision caching can delay discovery beyond the polling interval; generated Applications have a separate reconciliation interval.
+
 The books image repository is configured separately in each file under `apps/k8s-books/envs/`. The staging image is selected by `imageTag` in `apps/k8s-books/envs/staging.yaml`; update it to a published tag to deploy another version. To render a preview locally, supply the values normally provided by the ApplicationSet:
 
 ```sh
