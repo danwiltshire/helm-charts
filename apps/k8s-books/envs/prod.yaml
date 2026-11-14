@@ -1,2 +1,2 @@
 domainName: k8s-books.danforge.net
-imageTag: f602448
+imageTag: "f602448"
