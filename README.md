@@ -1,12 +1,13 @@
 ## Bootstrapping a new cluster
 
-The `clusters` directory contains a Helmfile for one-time cluster setup. It installs the EKS Auto Mode internal and internet-facing ALB IngressClasses, the default gp3 EBS StorageClass, and KEDA. The cluster-scoped ingress and storage resources are packaged in a focused local chart under `clusters/cluster-resources`; KEDA is installed separately into its own namespace.
+The `cluster_bootstrap` directory contains a Helmfile for one-time cluster setup. It installs the EKS Auto Mode internal and internet-facing ALB IngressClasses, the default gp3 EBS StorageClass, an ARM64 on-demand NodePool, and KEDA. The cluster-scoped resources are packaged in a local chart under `cluster_bootstrap/cluster-resources`; KEDA is installed separately into its own namespace. The NodePool uses the EKS Auto Mode `default` NodeClass.
 
 ### Prerequisites
 
 - [Helm](https://helm.sh/docs/intro/install/)
 - [Helmfile](https://helmfile.readthedocs.io/en/latest/)
 - Access to the target Kubernetes cluster with permissions to install cluster-scoped resources and KEDA's CRDs and RBAC.
+- An EKS Auto Mode cluster with the `default` NodeClass available.
 
 Configure your kubeconfig for the new cluster, then run:
 
@@ -16,9 +17,9 @@ helmfile template
 helmfile sync
 ```
 
-The cluster-resources Helm release is stored in the existing `kube-system` namespace. KEDA is installed as a separate release in the `keda` namespace, which Helmfile creates if needed. IngressClasses, their parameters, and the StorageClass are cluster-scoped resources.
+The cluster-resources Helm release is stored in the existing `kube-system` namespace. KEDA is installed as a separate release in the `keda` namespace, which Helmfile creates if needed. IngressClasses, their parameters, the StorageClass, and the NodePool are cluster-scoped resources.
 
-The KEDA Helm chart version is pinned in `clusters/helmfile.yaml`. Upgrade it by changing that version in a reviewed commit, checking KEDA's release notes and CRD compatibility, then running `helmfile sync` against each intended cluster. This setup is manually applied and does not continuously reconcile clusters.
+The KEDA Helm chart version is pinned in `cluster_bootstrap/helmfile.yaml`. Upgrade it by changing that version in a reviewed commit, checking KEDA's release notes and CRD compatibility, then running `helmfile sync` against each intended cluster. This setup is manually applied and does not continuously reconcile clusters.
 
 ## Deploying applications with Argo CD
 
