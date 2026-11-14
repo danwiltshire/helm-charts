@@ -42,7 +42,7 @@ spec:
           - name: imageTag
             value: '{{.head_sha | trunc 7}}'
       destination:
-        name: nonprod
+        name: prod
         namespace: '{{.values.app}}-pr-{{.number}}'
       syncPolicy:
         automated:
