@@ -12,6 +12,8 @@ spec:
       labels:
         app: books
     spec:
+      nodeSelector:
+        kubernetes.io/arch: arm64
       containers:
         - name: books
           image: {{ printf "%s:%s" (required "imageRepository is required" .Values.imageRepository) (required "imageTag is required" .Values.imageTag) | quote }}
