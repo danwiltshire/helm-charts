@@ -34,5 +34,8 @@ spec:
         automated:
           prune: true
           selfHeal: true
+        managedNamespaceMetadata:
+          labels:
+            eks.amazonaws.com/pod-readiness-gate-inject: enabled
         syncOptions:
         - CreateNamespace=true
