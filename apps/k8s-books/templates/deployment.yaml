@@ -12,11 +12,16 @@ spec:
       labels:
         app: books
     spec:
+      terminationGracePeriodSeconds: 30
       nodeSelector:
         kubernetes.io/arch: arm64
       containers:
         - name: books
           image: {{ printf "%s:%s" (required "imageRepository is required" .Values.imageRepository) (required "imageTag is required" .Values.imageTag) | quote }}
+          lifecycle:
+            preStop:
+              sleep:
+                seconds: 10
           ports:
             - name: http
               containerPort: 3000
