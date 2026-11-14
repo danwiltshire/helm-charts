@@ -24,7 +24,6 @@ spec:
             repo: '{{.values.app}}'
             labels:
             - preview
-          requeueAfterSeconds: 60
   template:
     metadata:
       name: '{{.values.app}}-pr-{{.number}}'
