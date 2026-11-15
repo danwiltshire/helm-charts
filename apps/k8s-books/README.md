@@ -8,6 +8,9 @@ Books application
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
+| awsSecret.enabled | bool | `false` | Synchronize an AWS Secrets Manager JSON secret into the deployment. |
+| awsSecret.region | string | `"eu-west-2"` | AWS region containing the secret. |
+| awsSecret.remoteKey | string | `""` | AWS Secrets Manager secret name or ARN. |
 | imageRepository | string | `"426576223955.dkr.ecr.eu-west-2.amazonaws.com/k8s-books"` |  |
 | imageTag | string | `""` |  |
 

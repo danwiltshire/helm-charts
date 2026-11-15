@@ -1,3 +1,6 @@
 # yaml-language-server: $schema=../values.schema.json
 domainName: k8s-books.danforge.net
 imageTag: "04ce48b"
+awsSecret:
+  enabled: true
+  remoteKey: /k8s-books/prod/auth

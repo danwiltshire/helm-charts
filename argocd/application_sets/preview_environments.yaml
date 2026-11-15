@@ -27,10 +27,36 @@ spec:
   template:
     metadata:
       name: '{{.values.app}}-pr-{{.number}}'
+      finalizers:
+      - resources-finalizer.argocd.argoproj.io
+      annotations:
+        danforge.net/preview-repository: 'https://github.com/danwiltshire/{{.values.app}}'
+        danforge.net/preview-sha: '{{.head_sha}}'
+        danforge.net/preview-url: 'https://{{.values.app}}-{{.number}}.preview.danforge.net'
+        notifications.argoproj.io/subscribe.preview-creating.github: ""
+        notifications.argoproj.io/subscribe.preview-ready.github: ""
+        notifications.argoproj.io/subscribe.preview-failed.github: ""
+        notifications.argoproj.io/subscribe.preview-deleting.github: ""
     spec:
       project: default
-      source:
-        repoURL: https://github.com/danwiltshire/helm-charts.git
+      ignoreDifferences:
+      - group: apps
+        kind: Deployment
+        jsonPointers:
+        - /spec/template/metadata/annotations/reloader.stakater.com~1last-reloaded-from
+      - group: apps
+        kind: StatefulSet
+        jsonPointers:
+        - /spec/template/metadata/annotations/reloader.stakater.com~1last-reloaded-from
+      - group: apps
+        kind: DaemonSet
+        jsonPointers:
+        - /spec/template/metadata/annotations/reloader.stakater.com~1last-reloaded-from
+      sources:
+      - repoURL: 'https://github.com/danwiltshire/{{.values.app}}.git'
+        targetRevision: '{{.head_sha}}'
+        ref: app
+      - repoURL: https://github.com/danwiltshire/helm-charts.git
         targetRevision: HEAD
         path: 'apps/{{.values.app}}'
         helm:
@@ -41,6 +67,7 @@ spec:
             value: '{{.values.app}}-{{.number}}.preview.danforge.net'
           - name: imageTag
             value: '{{.head_sha | trunc 7}}'
+            forceString: true
       destination:
         name: prod
         namespace: '{{.values.app}}-pr-{{.number}}'

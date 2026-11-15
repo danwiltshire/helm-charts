@@ -2,6 +2,10 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: books-deployment
+  {{- if .Values.awsSecret.enabled }}
+  annotations:
+    secret.reloader.stakater.com/reload: books-auth
+  {{- end }}
 spec:
   selector:
     matchLabels:
@@ -18,6 +22,11 @@ spec:
       containers:
         - name: books
           image: {{ printf "%s:%s" (required "imageRepository is required" .Values.imageRepository) (required "imageTag is required" .Values.imageTag) | quote }}
+          {{- if .Values.awsSecret.enabled }}
+          envFrom:
+            - secretRef:
+                name: books-auth
+          {{- end }}
           lifecycle:
             preStop:
               sleep:

@@ -1,0 +1,92 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-notifications-cm
+  namespace: argocd
+  labels:
+    eks.amazonaws.com/managed-notifications: "enabled"
+data:
+  context: |
+    argocdUrl: {{ required "argocdUrl is required" .Values.argocdUrl | quote }}
+  service.github: |
+    appID: 5760331
+    installationID: 181971197
+    privateKey: $github-private-key
+  trigger.preview-creating: |
+    - when: app.metadata.deletionTimestamp == nil
+      oncePer: app.metadata.uid
+      send: [preview-creating]
+  trigger.preview-ready: |
+    - when: >-
+        app.metadata.deletionTimestamp == nil and
+        app.status?.operationState != nil and app.status.operationState.phase == 'Succeeded' and
+        app.status?.sync?.status == 'Synced' and app.status?.health?.status == 'Healthy' and
+        (app.status?.conditions == nil or not any(app.status.conditions, #.type in ['InvalidSpecError', 'ComparisonError', 'SyncError', 'UnknownError']))
+      send: [preview-ready]
+  trigger.preview-failed: |
+    - when: >-
+        app.metadata.deletionTimestamp == nil and (
+        (app.status?.operationState != nil and app.status.operationState.phase in ['Error', 'Failed']) or
+        app.status?.health?.status == 'Degraded' or
+        (app.status?.conditions != nil and any(app.status.conditions, #.type in ['InvalidSpecError', 'ComparisonError', 'SyncError', 'UnknownError'])))
+      send: [preview-failed]
+  trigger.preview-deleting: |
+    - when: app.metadata.deletionTimestamp != nil
+      oncePer: app.metadata.uid
+      send: [preview-deleting]
+  template.preview-creating: |
+    github:
+      repoURLPath: '{{`{{ index .app.metadata.annotations "danforge.net/preview-repository" }}`}}'
+      revisionPath: '{{`{{ index .app.metadata.annotations "danforge.net/preview-sha" }}`}}'
+      pullRequestComment:
+        commentTag: danforge-preview
+        content: |
+          ## :rocket: Preview Environment Creating
+
+          | Type | URL |
+          | --- | --- |
+          {{`{{- range .app.status.summary.externalURLs }}`}}
+          | Preview | <{{`{{ . }}`}}> |
+          {{`{{- else }}`}}
+          | Preview | <{{`{{ index .app.metadata.annotations "danforge.net/preview-url" }}`}}> |
+          {{`{{- end }}`}}
+          | Argo CD | [View application]({{`{{ .context.argocdUrl }}`}}/applications/{{`{{ .app.metadata.name }}`}}) |
+  template.preview-ready: |
+    github:
+      repoURLPath: '{{`{{ index .app.metadata.annotations "danforge.net/preview-repository" }}`}}'
+      revisionPath: '{{`{{ index .app.metadata.annotations "danforge.net/preview-sha" }}`}}'
+      pullRequestComment:
+        commentTag: danforge-preview
+        content: |
+          ## :rocket: Preview Environment Created
+
+          | Type | URL |
+          | --- | --- |
+          {{`{{- range .app.status.summary.externalURLs }}`}}
+          | Preview | <{{`{{ . }}`}}> |
+          {{`{{- else }}`}}
+          | Preview | <{{`{{ index .app.metadata.annotations "danforge.net/preview-url" }}`}}> |
+          {{`{{- end }}`}}
+          | Argo CD | [View application]({{`{{ .context.argocdUrl }}`}}/applications/{{`{{ .app.metadata.name }}`}}) |
+  template.preview-failed: |
+    github:
+      repoURLPath: '{{`{{ index .app.metadata.annotations "danforge.net/preview-repository" }}`}}'
+      revisionPath: '{{`{{ index .app.metadata.annotations "danforge.net/preview-sha" }}`}}'
+      pullRequestComment:
+        commentTag: danforge-preview
+        content: |
+          ## Preview Environment Failed or Degraded
+
+          | Type | URL |
+          | --- | --- |
+          | Argo CD | [View application]({{`{{ .context.argocdUrl }}`}}/applications/{{`{{ .app.metadata.name }}`}}) |
+  template.preview-deleting: |
+    github:
+      repoURLPath: '{{`{{ index .app.metadata.annotations "danforge.net/preview-repository" }}`}}'
+      revisionPath: '{{`{{ index .app.metadata.annotations "danforge.net/preview-sha" }}`}}'
+      pullRequestComment:
+        commentTag: danforge-preview
+        content: |
+          ## Preview Environment Deleting
+
+          Deletion has started; cleanup may still be in progress.

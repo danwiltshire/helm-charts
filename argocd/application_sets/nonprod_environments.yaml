@@ -24,6 +24,19 @@ spec:
       name: '{{.values.app}}-{{.values.env}}'
     spec:
       project: default
+      ignoreDifferences:
+      - group: apps
+        kind: Deployment
+        jsonPointers:
+        - /spec/template/metadata/annotations/reloader.stakater.com~1last-reloaded-from
+      - group: apps
+        kind: StatefulSet
+        jsonPointers:
+        - /spec/template/metadata/annotations/reloader.stakater.com~1last-reloaded-from
+      - group: apps
+        kind: DaemonSet
+        jsonPointers:
+        - /spec/template/metadata/annotations/reloader.stakater.com~1last-reloaded-from
       source:
         repoURL: https://github.com/danwiltshire/helm-charts.git
         targetRevision: HEAD
