@@ -4,7 +4,57 @@
     "awsSecrets": {
       "description": "AWS Secrets Manager secrets to synchronize; labels are Kubernetes Secret names.",
       "items": {
-        "required": []
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "json": {
+                  "const": false,
+                  "required": []
+                }
+              },
+              "required": [
+                "json"
+              ]
+            },
+            "required": [],
+            "then": {
+              "required": [
+                "envName"
+              ]
+            }
+          }
+        ],
+        "properties": {
+          "envName": {
+            "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
+            "type": "string"
+          },
+          "json": {
+            "type": "boolean"
+          },
+          "label": {
+            "maxLength": 253,
+            "minLength": 1,
+            "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$",
+            "type": "string"
+          },
+          "region": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "secretName": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "secretName",
+          "region",
+          "label",
+          "json"
+        ],
+        "type": "object"
       },
       "title": "awsSecrets",
       "type": "array"

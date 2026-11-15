@@ -42,7 +42,7 @@ awsSecrets:
 
 `secretName` is the AWS secret name or ARN. `region` is required for each entry: the installed External Secrets Operator validates the SecretStore's region and does not infer it from the cluster or ARN. `label` is the name of the generated SecretStore, ExternalSecret, and Kubernetes Secret. It must be a valid Kubernetes Secret name and unique within the namespace, including across applications. Use a distinct label for each entry.
 
-For `json: true`, the AWS value must be a JSON object; its top-level keys become Kubernetes Secret keys. For `json: false`, the entire AWS value is stored under the required `envName`. Use keys valid as Kubernetes Secret keys and environment variables, with string values. Invalid input or duplicate labels cause Helm rendering to fail; AWS access or invalid JSON is reported by External Secrets Operator.
+For `json: true`, the AWS value must be a JSON object; its top-level keys become Kubernetes Secret keys. For `json: false`, the entire AWS value is stored under the required `envName`. Use keys valid as Kubernetes Secret keys and environment variables, with string values. Duplicate labels in one list cause Helm rendering to fail; AWS access or invalid JSON is reported by External Secrets Operator.
 
 Reference only the Secrets the container needs, and enable Reloader on the workload:
 
@@ -67,5 +67,7 @@ spec:
 Reloader watches all Secrets referenced by the workload, not just those in `awsSecrets`. If multiple `envFrom` entries contain the same key, the later entry wins. An empty `awsSecrets` list creates no resources; a referenced Secret must be provided separately if it is not configured in the list.
 
 Run `helm dependency build <application-chart-path>` before local `helm lint` or `helm template`. Argo CD normally builds missing dependencies when rendering; the file dependency must remain within the checked-out repository. Verify that the managed Argo CD capability can build it.
+
+The library's values file includes `helm-schema` annotations for `awsSecrets`. Generate and maintain a `values.schema.json` in each consuming application chart to validate these values; the library templates only check for duplicate labels. Rebuild the dependency before regenerating the application's schema so the generator picks up changes to the annotations. Do not skip Helm schema validation.
 
 Each ExternalSecret polls AWS every 30 seconds and owns its generated Secret. Changes to Secret data trigger a rolling restart; polling and rollout time mean this is not a 30-second restart guarantee. Removing or renaming an entry can delete its generated Secret, so update workload references at the same time.
