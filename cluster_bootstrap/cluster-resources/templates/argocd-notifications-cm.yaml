@@ -23,13 +23,6 @@ data:
         app.status?.sync?.status == 'Synced' and app.status?.health?.status == 'Healthy' and
         (app.status?.conditions == nil or not any(app.status.conditions, #.type in ['InvalidSpecError', 'ComparisonError', 'SyncError', 'UnknownError']))
       send: [preview-ready]
-  trigger.preview-failed: |
-    - when: >-
-        app.metadata.deletionTimestamp == nil and (
-        (app.status?.operationState != nil and app.status.operationState.phase in ['Error', 'Failed']) or
-        app.status?.health?.status == 'Degraded' or
-        (app.status?.conditions != nil and any(app.status.conditions, #.type in ['InvalidSpecError', 'ComparisonError', 'SyncError', 'UnknownError'])))
-      send: [preview-failed]
   trigger.preview-deleting: |
     - when: app.metadata.deletionTimestamp != nil
       oncePer: app.metadata.uid
@@ -67,18 +60,6 @@ data:
           {{`{{- else }}`}}
           | Preview | <{{`{{ index .app.metadata.annotations "danforge.net/preview-url" }}`}}> |
           {{`{{- end }}`}}
-          | Argo CD | [View application]({{`{{ .context.argocdUrl }}`}}/applications/{{`{{ .app.metadata.name }}`}}) |
-  template.preview-failed: |
-    github:
-      repoURLPath: '{{`{{ index .app.metadata.annotations "danforge.net/preview-repository" }}`}}'
-      revisionPath: '{{`{{ index .app.metadata.annotations "danforge.net/preview-sha" }}`}}'
-      pullRequestComment:
-        commentTag: danforge-preview
-        content: |
-          ## Preview Environment Failed or Degraded
-
-          | Type | URL |
-          | --- | --- |
           | Argo CD | [View application]({{`{{ .context.argocdUrl }}`}}/applications/{{`{{ .app.metadata.name }}`}}) |
   template.preview-deleting: |
     github:
