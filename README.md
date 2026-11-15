@@ -24,11 +24,11 @@ The cluster-resources Helm release is stored in the existing `kube-system` names
 
 The operator Helm chart versions are pinned in `cluster_bootstrap/helmfile.yaml`. Upgrade them in a reviewed commit after checking release notes and CRD compatibility, then run `helmfile sync` against each intended cluster. This setup is manually applied and does not continuously reconcile clusters.
 
-### Production secret access
+### Secret access
 
-Before deploying books in production, associate an IAM role with the External Secrets Operator service account in the production cluster. EKS Auto Mode provides the Pod Identity agent; no separate agent installation is required. This role is separate from the Argo CD capability role.
+Before deploying books in production or preview, associate an IAM role with the External Secrets Operator service account in the destination cluster. Both books production and preview ApplicationSets currently target `prod`, so that cluster's operator needs access to both secrets. EKS Auto Mode provides the Pod Identity agent; no separate agent installation is required. This role is separate from the Argo CD capability role.
 
-Create a role with this trust policy, replacing `<prod-cluster-name>` and leaving Pod Identity session tags enabled:
+Create a role with this trust policy, replacing `<cluster-name>` and leaving Pod Identity session tags enabled:
 
 ```json
 {
@@ -39,7 +39,7 @@ Create a role with this trust policy, replacing `<prod-cluster-name>` and leavin
     "Action": ["sts:AssumeRole", "sts:TagSession"],
     "Condition": {
       "StringEquals": {
-        "aws:RequestTag/eks-cluster-name": "<prod-cluster-name>",
+        "aws:RequestTag/eks-cluster-name": "<cluster-name>",
         "aws:RequestTag/kubernetes-namespace": "external-secrets",
         "aws:RequestTag/kubernetes-service-account": "external-secrets"
       }
@@ -48,14 +48,16 @@ Create a role with this trust policy, replacing `<prod-cluster-name>` and leavin
 }
 ```
 
-The secret ARN can be found without retrieving the secret value:
+Find both secret ARNs without retrieving their values:
 
 ```sh
 aws secretsmanager describe-secret --region eu-west-2 \
   --secret-id /k8s-books/prod/auth --query ARN --output text
+aws secretsmanager describe-secret --region eu-west-2 \
+  --secret-id /k8s-books/preview/auth --query ARN --output text
 ```
 
-Attach this permissions policy to the role, replacing the placeholder with that exact ARN:
+Attach this permissions policy to the role, replacing the placeholders with those exact ARNs:
 
 ```json
 {
@@ -63,7 +65,7 @@ Attach this permissions policy to the role, replacing the placeholder with that 
   "Statement": [{
     "Effect": "Allow",
     "Action": "secretsmanager:GetSecretValue",
-    "Resource": "<secret-arn>"
+    "Resource": ["<prod-secret-arn>", "<preview-secret-arn>"]
   }]
 }
 ```
@@ -74,22 +76,22 @@ Create the association before installing the operator, replacing the placeholder
 
 ```sh
 aws eks create-pod-identity-association --region eu-west-2 \
-  --cluster-name <prod-cluster-name> --namespace external-secrets \
+  --cluster-name <cluster-name> --namespace external-secrets \
   --service-account external-secrets --role-arn <role-arn>
 ```
 
-The caller needs permission to create the association and pass the role. If the operator was already running before the association existed, restart it after the association is active: `kubectl --context <prod-context> rollout restart deployment/external-secrets -n external-secrets`.
+The caller needs permission to create the association and pass the role. If the operator was already running before the association existed, restart it after the association is active: `kubectl --context <cluster-context> rollout restart deployment/external-secrets -n external-secrets`.
 
 The controller's role is shared across stores it reconciles. Restrict who can create or modify ExternalSecrets and SecretStores in the cluster, and keep the role limited to intended secrets. Synced values are stored in Kubernetes Secrets and exposed to containers as environment variables, so restrict Kubernetes Secret and pod access accordingly.
 
 ## Deploying applications with Argo CD
 
-Apply each ApplicationSet to the Argo CD installation that should manage its destination. The sets use fixed destination names: `prod` for production and `nonprod` for non-production and preview applications.
+Apply each ApplicationSet to the Argo CD installation that should manage its destination. The sets use fixed destination names: `prod` for production and preview applications, and `nonprod` for other non-production applications.
 
 ```sh
 kubectl --context <prod-argocd-context> apply -f argocd/application_sets/prod_environments.yaml
 kubectl --context <nonprod-argocd-context> apply -f argocd/application_sets/nonprod_environments.yaml
-kubectl --context <nonprod-argocd-context> apply -f argocd/application_sets/preview_environments.yaml
+kubectl --context <prod-argocd-context> apply -f argocd/application_sets/preview_environments.yaml
 ```
 
 The context must point to the cluster hosting the relevant Argo CD control plane. These commands create ApplicationSet resources in its `argocd` namespace. Argo CD then creates Applications targeting the registered cluster whose name is `prod` or `nonprod`. If a single Argo CD installation manages both clusters, apply all three sets to that one control plane instead.
@@ -111,14 +113,15 @@ The GitHub notification service finds pull requests associated with the preview 
 
 The ApplicationSet Git generators and preview pull request generator poll every 60 seconds. Git revision caching can delay discovery beyond the polling interval; generated Applications have a separate reconciliation interval.
 
-The books image repository is configured separately in each file under `apps/k8s-books/envs/`. The staging image is selected by `imageTag` in `apps/k8s-books/envs/staging.yaml`; update it to a published tag to deploy another version. To render a preview locally, supply the values normally provided by the ApplicationSet:
+The books image repository is configured in `apps/k8s-books/values.yaml`. Production selects its image with `imageTag` in `apps/k8s-books/envs/prod.yaml`; update it to a published tag to deploy another version. To render a preview locally, supply the values normally provided by the ApplicationSet:
 
 ```sh
+helm dependency build apps/k8s-books
 helm template books apps/k8s-books -f apps/k8s-books/envs/preview.yaml \
   --set imageTag=f6775c6 --set domainName=k8s-books-123.preview.danforge.net
 ```
 
-Install External Secrets Operator and its CRDs via the production Helmfile before syncing books. In production, the operator extracts the top-level keys of the `/k8s-books/prod/auth` JSON object into the `books-auth` Kubernetes Secret every 30 seconds. Use keys valid for Kubernetes Secret keys and environment variables, with string values. The books Deployment imports all keys using `envFrom`, and Reloader triggers a rolling restart when the Secret data changes. The interval is a polling target, not a 30-second restart guarantee; intermediate versions can be missed if updates occur between polls. Preview and other environments do not use this production secret.
+Install External Secrets Operator and its CRDs via the Helmfile before syncing books. Create the JSON secrets `/k8s-books/prod/auth` for production and `/k8s-books/preview/auth` for previews, and grant the corresponding operator access as described above. The operator extracts their top-level keys into a `books-auth` Kubernetes Secret in each application's namespace every 30 seconds. Use keys valid for Kubernetes Secret keys and environment variables, with string values. The books Deployment requires that Secret and imports all keys using `envFrom`; Reloader triggers a rolling restart when the Secret data changes. Pods cannot start until the Secret is synchronized. The interval is a polling target, not a 30-second restart guarantee; intermediate versions can be missed if updates occur between polls.
 
 All three ApplicationSets ignore Reloader's pod-template annotation when comparing workloads. This does not make Argo CD respect ignored fields during sync; verify the rollout annotation survives syncs in the managed capability. Reloader also resynchronizes watched workloads on leader restart, which can cause additional rollouts. Check synchronization without printing secret values using `kubectl --context <prod-context> get externalsecret books-auth -n k8s-books-prod` and check the rollout using `kubectl --context <prod-context> rollout status deployment/books-deployment -n k8s-books-prod`.
 

@@ -4,13 +4,17 @@
 
 Books application
 
+## Requirements
+
+| Repository | Name | Version |
+|------------|------|---------|
+| file://../../charts/aws-secrets | aws-secrets | 0.1.0 |
+
 ## Values
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| awsSecret.enabled | bool | `false` | Synchronize an AWS Secrets Manager JSON secret into the deployment. |
-| awsSecret.region | string | `"eu-west-2"` | AWS region containing the secret. |
-| awsSecret.remoteKey | string | `""` | AWS Secrets Manager secret name or ARN. |
+| awsSecrets | list | `[]` | AWS Secrets Manager secrets to synchronize; labels are Kubernetes Secret names. |
 | imageRepository | string | `"426576223955.dkr.ecr.eu-west-2.amazonaws.com/k8s-books"` |  |
 | imageTag | string | `""` |  |
 

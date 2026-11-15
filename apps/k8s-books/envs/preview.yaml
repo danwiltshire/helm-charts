@@ -1,1 +1,6 @@
 # yaml-language-server: $schema=../values.schema.json
+awsSecrets:
+  - secretName: /k8s-books/preview/auth
+    region: eu-west-2
+    label: books-auth
+    json: true

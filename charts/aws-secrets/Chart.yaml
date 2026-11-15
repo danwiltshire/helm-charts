@@ -1,0 +1,5 @@
+apiVersion: v2
+name: aws-secrets
+description: Shared External Secrets templates for AWS Secrets Manager
+type: library
+version: 0.1.0
