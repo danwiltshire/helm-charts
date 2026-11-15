@@ -6,4 +6,4 @@ version: 0.1.0
 dependencies:
   - name: aws-secrets
     version: 0.1.0
-    repository: file://../../charts/aws-secrets
+    repository: file://../../library_charts/aws-secrets

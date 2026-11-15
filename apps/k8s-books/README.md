@@ -8,7 +8,7 @@ Books application
 
 | Repository | Name | Version |
 |------------|------|---------|
-| file://../../charts/aws-secrets | aws-secrets | 0.1.0 |
+| file://../../library_charts/aws-secrets | aws-secrets | 0.1.0 |
 
 ## Values
 

@@ -30,5 +30,4 @@
 #       then:
 #         required: [envName]
 # @schema
-# -- AWS Secrets Manager secrets to synchronize; labels are Kubernetes Secret names.
 awsSecrets: []

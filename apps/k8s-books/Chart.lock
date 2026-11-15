@@ -1,6 +1,6 @@
 dependencies:
 - name: aws-secrets
-  repository: file://../../charts/aws-secrets
+  repository: file://../../library_charts/aws-secrets
   version: 0.1.0
-digest: sha256:bcb05b0354f5bc03107bd2902015acf21c8fa003eecb4114053c0e4b8fd953b6
-generated: "2026-11-15T08:36:59.05669Z"
+digest: sha256:7381fe01617a3676f8a0e424f9cd063b6cd9a936adf95cfd148921fcdf5e231b
+generated: "2026-11-15T09:51:54.579911Z"
