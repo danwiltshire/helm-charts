@@ -39,7 +39,7 @@ data:
           | Type | URL |
           | --- | --- |
           {{`{{- range .app.status.summary.externalURLs }}`}}
-          | Preview | <{{`{{ . }}`}}> |
+          | Preview | <{{`{{ call $.strings.ReplaceAll . "http://" "https://" }}`}}> |
           {{`{{- else }}`}}
           | Preview | <{{`{{ index .app.metadata.annotations "danforge.net/preview-url" }}`}}> |
           {{`{{- end }}`}}
@@ -56,7 +56,7 @@ data:
           | Type | URL |
           | --- | --- |
           {{`{{- range .app.status.summary.externalURLs }}`}}
-          | Preview | <{{`{{ . }}`}}> |
+          | Preview | <{{`{{ call $.strings.ReplaceAll . "http://" "https://" }}`}}> |
           {{`{{- else }}`}}
           | Preview | <{{`{{ index .app.metadata.annotations "danforge.net/preview-url" }}`}}> |
           {{`{{- end }}`}}

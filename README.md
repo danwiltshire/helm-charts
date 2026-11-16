@@ -89,6 +89,8 @@ The controller's role is shared across stores it reconciles. Restrict who can cr
 Apply each ApplicationSet to the Argo CD installation that should manage its destination. The sets use fixed destination names: `prod` for production and preview applications, and `nonprod` for other non-production applications.
 
 ```sh
+kubectl --context <prod-argocd-context> apply -f argocd/github-app-credentials.yaml
+kubectl --context <prod-argocd-context> wait --for=condition=Ready externalsecret/argocd-github-app -n argocd --timeout=120s
 kubectl --context <prod-argocd-context> apply -f argocd/application_sets/prod_environments.yaml
 kubectl --context <nonprod-argocd-context> apply -f argocd/application_sets/nonprod_environments.yaml
 kubectl --context <prod-argocd-context> apply -f argocd/application_sets/preview_environments.yaml
@@ -103,6 +105,15 @@ The ApplicationSets label their managed namespaces with `eks.amazonaws.com/pod-r
 
 Preview applications use pull requests labeled `preview` from a GitHub repository named after the app directory. The ApplicationSet overrides `domainName` and `imageTag`, setting the latter to the seven-character PR head SHA; the corresponding image must already be published.
 
+The preview pull request generator authenticates with the `danforge-argocd`
+GitHub App. The External Secret above syncs its existing Secrets Manager
+private key into the `argocd` namespace; the External Secrets Operator must
+be installed and have access to that secret. The app installation must have
+pull request read access to each preview repository. Restrict access to the
+resulting Kubernetes Secret, which contains the app's private key. It is
+labeled as Argo CD repository credentials for the managed capability and has
+no repository URL, so it is only referenced by the preview generator.
+
 Preview Applications list the application repository and full PR head SHA as a reference-only source, followed by the Helm chart repository. The application source does not supply manifests or values; the chart and preview values remain in `helm-charts`. The Argo CD project must permit both repositories.
 
 Preview Applications subscribe to GitHub comments when they are created, become synced and healthy, fail or become degraded, or start deletion. Notifications update a tagged PR comment; failure comments link to Argo CD without including error details. The deletion notification is best-effort and does not confirm cleanup has finished: Argo CD may remove the Application before the notification controller processes it. The cluster-resources chart installs the managed notification configuration and a Secret containing an AWS Secrets Manager ARN, not the private key. The `argocd` namespace must exist before installing the chart. The Argo CD capability role needs `secretsmanager:GetSecretValue` on that ARN and, for a customer-managed KMS key, `kms:Decrypt`; the GitHub App needs pull request write access to the preview repository. Apply these resources to the cluster hosting the capability that manages previews.
@@ -111,7 +122,12 @@ Creation and ready comments list the external URLs reported in the Application s
 
 The GitHub notification service finds pull requests associated with the preview head SHA, rather than targeting the PR number, and may comment on more than one PR sharing that commit. Notifications cannot report ApplicationSet failures that prevent an Application from being created. The preview URL in a creation or failure comment may not yet be reachable.
 
-The ApplicationSet Git generators and preview pull request generator poll every 60 seconds. Git revision caching can delay discovery beyond the polling interval; generated Applications have a separate reconciliation interval.
+The preview pull request generator defaults to 30-minute polling, but the
+matrix requeues at the shortest child generator interval. The Git generator
+defaults to three minutes upstream; the managed controller may configure a
+different default. Webhooks can trigger earlier refreshes; Git revision caching
+can also delay discovery. Generated Applications have a separate reconciliation
+interval.
 
 The books image repository is configured in `apps/k8s-books/values.yaml`. Production selects its image with `imageTag` in `apps/k8s-books/envs/prod.yaml`; update it to a published tag to deploy another version. To render a preview locally, supply the values normally provided by the ApplicationSet:
 
