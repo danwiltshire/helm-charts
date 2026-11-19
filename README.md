@@ -148,6 +148,7 @@ All three ApplicationSets ignore Reloader's pod-template annotation when compari
 - [helm](https://helm.sh/docs/intro/install/)
 - [pre-commit](https://github.com/pre-commit/pre-commit)
 - [helm-docs](https://github.com/norwoodj/helm-docs/)
+- [Kyverno CLI](https://kyverno.io/docs/kyverno-cli/) v1.20.0 or later
 
 ### Setup Hooks
 

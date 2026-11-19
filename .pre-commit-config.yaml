@@ -32,3 +32,9 @@ repos:
         entry: scripts/add-env-schema-reference.sh
         language: script
         files: ^apps/[^/]+/envs/[^/]+\.ya?ml$
+
+      - id: kyverno
+        name: validate application manifests with Kyverno
+        entry: bash scripts/validate-kyverno.sh
+        language: system
+        pass_filenames: false

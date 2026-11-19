@@ -1,0 +1,30 @@
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
+metadata:
+  name: require-deployment-probes-and-prestop
+spec:
+  validationActions:
+    - Deny
+  matchConstraints:
+    resourceRules:
+      - apiGroups:
+          - apps
+        apiVersions:
+          - v1
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - deployments
+  validations:
+    - message: Every Deployment container must define readiness and liveness probes.
+      expression: >-
+        object.spec.template.spec.containers.all(container,
+          container.?readinessProbe.hasValue() &&
+          container.?livenessProbe.hasValue()
+        )
+    - message: Every Deployment container must define a preStop sleep handler of 10 seconds.
+      expression: >-
+        object.spec.template.spec.containers.all(container,
+          container.?lifecycle.?preStop.?sleep.?seconds.orValue(0) == 10
+        )

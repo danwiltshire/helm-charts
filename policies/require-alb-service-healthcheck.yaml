@@ -1,0 +1,25 @@
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
+metadata:
+  name: require-alb-service-healthcheck
+spec:
+  validationActions:
+    - Deny
+  matchConstraints:
+    resourceRules:
+      - apiGroups:
+          - ''
+        apiVersions:
+          - v1
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - services
+  variables:
+    - name: annotations
+      expression: object.metadata.?annotations.orValue({})
+  validations:
+    - message: Services must define the alb.ingress.kubernetes.io/healthcheck-path annotation.
+      expression: >-
+        variables.annotations[?'alb.ingress.kubernetes.io/healthcheck-path'].hasValue()
