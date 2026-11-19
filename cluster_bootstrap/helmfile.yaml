@@ -16,14 +16,6 @@ repositories:
     url: https://stakater.github.io/stakater-charts
 
 releases:
-  - name: cluster-resources
-    namespace: kube-system
-    chart: ./cluster-resources
-    values:
-      - cluster-resources-values.yaml.gotmpl
-    createNamespace: false
-    wait: true
-
   - name: keda
     namespace: keda
     chart: kedacore/keda
@@ -58,3 +50,13 @@ releases:
     createNamespace: true
     wait: true
     timeout: 600
+
+  - name: cluster-resources
+    namespace: kube-system
+    chart: ./cluster-resources
+    needs:
+      - external-secrets/external-secrets
+    values:
+      - cluster-resources-values.yaml.gotmpl
+    createNamespace: false
+    wait: true

@@ -18,7 +18,7 @@ helmfile --environment prod --kube-context <prod-context> template
 helmfile --environment prod --kube-context <prod-context> sync
 ```
 
-For non-production, use `--environment nonprod` and its matching context. Set `argocdUrl` under each environment in `cluster_bootstrap/helmfile.yaml` to its managed Argo CD server URL. The URL is required and should not have a trailing slash. Selecting an environment does not select the Kubernetes cluster.
+For non-production, use `--environment nonprod` and its matching context. Set `argocdUrl` under each environment in `cluster_bootstrap/helmfile.yaml` to its managed Argo CD server URL. The URL is required and should not have a trailing slash. The selected Helmfile environment also determines the webhook secret path: `prod` uses `/argocd/prod/webhook-shared-secret`, while `nonprod` uses `/argocd/nonprod/webhook-shared-secret`. Selecting an environment does not select the Kubernetes cluster.
 
 The cluster-resources Helm release is stored in the existing `kube-system` namespace. KEDA is installed as a separate release in the `keda` namespace, which Helmfile creates if needed. IngressClasses, their parameters, the StorageClass, and the NodePool are cluster-scoped resources.
 
@@ -26,7 +26,7 @@ The operator Helm chart versions are pinned in `cluster_bootstrap/helmfile.yaml`
 
 ### Secret access
 
-Before deploying books in production or preview, associate an IAM role with the External Secrets Operator service account in the destination cluster. Both books production and preview ApplicationSets currently target `prod`, so that cluster's operator needs access to both secrets. EKS Auto Mode provides the Pod Identity agent; no separate agent installation is required. This role is separate from the Argo CD capability role.
+Before deploying books in production or preview, associate an IAM role with the External Secrets Operator service account in the destination cluster. Both books production and preview ApplicationSets currently target `prod`, so that cluster's operator needs access to both secrets. The operator on the cluster hosting the managed Argo CD capability also needs access to the GitHub App private key, GitHub App metadata, and webhook shared secret described below. If this is the same cluster, grant its operator role access to all five secrets. EKS Auto Mode provides the Pod Identity agent; no separate agent installation is required. This role is separate from the Argo CD capability role.
 
 Create a role with this trust policy, replacing `<cluster-name>` and leaving Pod Identity session tags enabled:
 
@@ -48,16 +48,22 @@ Create a role with this trust policy, replacing `<cluster-name>` and leaving Pod
 }
 ```
 
-Find both secret ARNs without retrieving their values:
+Find the ARNs needed by each operator without retrieving secret values:
 
 ```sh
 aws secretsmanager describe-secret --region eu-west-2 \
   --secret-id /k8s-books/prod/auth --query ARN --output text
 aws secretsmanager describe-secret --region eu-west-2 \
   --secret-id /k8s-books/preview/auth --query ARN --output text
+aws secretsmanager describe-secret --region eu-west-2 \
+  --secret-id /github/danwiltshire/app/danforge-argocd/private-key --query ARN --output text
+aws secretsmanager describe-secret --region eu-west-2 \
+  --secret-id /github/danwiltshire/app/danforge-argocd/metadata --query ARN --output text
+aws secretsmanager describe-secret --region eu-west-2 \
+  --secret-id '/argocd/<environment>/webhook-shared-secret' --query ARN --output text
 ```
 
-Attach this permissions policy to the role, replacing the placeholders with those exact ARNs:
+Attach this permissions policy to each role, replacing the placeholders with the exact ARNs needed on that cluster:
 
 ```json
 {
@@ -65,7 +71,7 @@ Attach this permissions policy to the role, replacing the placeholders with thos
   "Statement": [{
     "Effect": "Allow",
     "Action": "secretsmanager:GetSecretValue",
-    "Resource": ["<prod-secret-arn>", "<preview-secret-arn>"]
+    "Resource": ["<required-secret-arn>", "<additional-required-secret-arn>"]
   }]
 }
 ```
@@ -89,14 +95,16 @@ The controller's role is shared across stores it reconciles. Restrict who can cr
 Apply each ApplicationSet to the Argo CD installation that should manage its destination. The sets use fixed destination names: `prod` for production and preview applications, and `nonprod` for other non-production applications.
 
 ```sh
-kubectl --context <prod-argocd-context> apply -f argocd/github-app-credentials.yaml
 kubectl --context <prod-argocd-context> wait --for=condition=Ready externalsecret/argocd-github-app -n argocd --timeout=120s
+kubectl --context <prod-argocd-context> wait --for=condition=Ready externalsecret/argocd-webhook-creds -n argocd --timeout=120s
 kubectl --context <prod-argocd-context> apply -f argocd/application_sets/prod_environments.yaml
 kubectl --context <nonprod-argocd-context> apply -f argocd/application_sets/nonprod_environments.yaml
 kubectl --context <prod-argocd-context> apply -f argocd/application_sets/preview_environments.yaml
 ```
 
 The context must point to the cluster hosting the relevant Argo CD control plane. These commands create ApplicationSet resources in its `argocd` namespace. Argo CD then creates Applications targeting the registered cluster whose name is `prod` or `nonprod`. If a single Argo CD installation manages both clusters, apply all three sets to that one control plane instead.
+
+The cluster-resources chart installs the GitHub App and webhook ExternalSecrets. The webhook ExternalSecret reads the entire value of `/argocd/<environment>/webhook-shared-secret` and merges it into `webhook.github.secret` in the EKS-managed `argocd-webhook-creds-secret`. The target Secret must already exist; ESO preserves its other keys and does not own or delete it. Before installing the chart, stop Terraform from managing that key: remove the `kubernetes_secret_v1_data.argocd_webhook` resource from its configuration and state without destroying it, and remove the now-unused data source. Do not leave Terraform and ESO managing the same key. Grant the operator role access to the AWS secret, then run bootstrap and wait for the ExternalSecret as above. The secret value remains managed in AWS Secrets Manager.
 
 The ApplicationSets label their managed namespaces with `eks.amazonaws.com/pod-readiness-gate-inject: enabled` for EKS Auto Mode. Readiness gates are injected when pods are created, not into existing pods. After the namespace label and IP target group binding exist, check the pods' `spec.readinessGates` and perform a controlled rollout if needed. On first deployment, target group binding creation is asynchronous, so verify that new pods received the gate. Before managing metadata on an existing namespace, follow [Argo CD's namespace adoption guidance](https://argo-cd.readthedocs.io/en/stable/user-guide/sync-options/#namespace-metadata).
 
@@ -106,9 +114,12 @@ The ApplicationSets label their managed namespaces with `eks.amazonaws.com/pod-r
 Preview applications use pull requests labeled `preview` from a GitHub repository named after the app directory. The ApplicationSet overrides `domainName` and `imageTag`, setting the latter to the seven-character PR head SHA; the corresponding image must already be published.
 
 The preview pull request generator authenticates with the `danforge-argocd`
-GitHub App. The External Secret above syncs its existing Secrets Manager
-private key into the `argocd` namespace; the External Secrets Operator must
-be installed and have access to that secret. The app installation must have
+GitHub App. The External Secret above syncs its Secrets Manager private key
+and the `APP_ID` and `INSTALLATION_ID` properties of its metadata JSON secret
+into the `argocd` namespace; the External Secrets Operator must be installed
+and have access to both secrets. The metadata properties should contain string
+values. The notification configuration separately specifies the same app and
+installation IDs; update it if the metadata changes. The app installation must have
 pull request read access to each preview repository. Restrict access to the
 resulting Kubernetes Secret, which contains the app's private key. It is
 labeled as Argo CD repository credentials for the managed capability and has
