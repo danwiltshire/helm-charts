@@ -1,6 +1,8 @@
 # yaml-language-server: $schema=../values.schema.json
+domainName: books.danforge.net
+imageTag: "04ce48b"
 awsSecrets:
-  - secretName: /k8s-books/preview/auth
+  - secretName: /books/prod/auth
     region: eu-west-2
     label: books-auth
     json: true

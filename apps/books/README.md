@@ -15,7 +15,7 @@ Books application
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | awsSecrets | list | `[]` | AWS Secrets Manager secrets to synchronize; labels are Kubernetes Secret names. |
-| imageRepository | string | `"426576223955.dkr.ecr.eu-west-2.amazonaws.com/k8s-books"` |  |
+| imageRepository | string | `"426576223955.dkr.ecr.eu-west-2.amazonaws.com/books"` |  |
 | imageTag | string | `""` |  |
 
 ----------------------------------------------

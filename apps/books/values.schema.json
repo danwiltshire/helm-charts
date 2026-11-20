@@ -66,7 +66,7 @@
       "type": "object"
     },
     "imageRepository": {
-      "default": "426576223955.dkr.ecr.eu-west-2.amazonaws.com/k8s-books",
+      "default": "426576223955.dkr.ecr.eu-west-2.amazonaws.com/books",
       "description": "yaml-language-server: $schema=values.schema.json",
       "title": "imageRepository",
       "type": "string"

@@ -22,18 +22,18 @@ dependencies:
 Add a template such as `templates/external-secret.yaml`:
 
 ```yaml
-{{- include "aws-secrets.resources" . }}
+{ { - include "aws-secrets.resources" . } }
 ```
 
 Configure secrets in chart values or an environment values file:
 
 ```yaml
 awsSecrets:
-  - secretName: /k8s-books/prod/auth
+  - secretName: /books/prod/auth
     region: eu-west-2
     label: books-auth
     json: true
-  - secretName: /k8s-books/prod/api-token
+  - secretName: /books/prod/api-token
     region: eu-west-2
     label: books-api
     json: false

@@ -33,18 +33,20 @@ Create a role with this trust policy, replacing `<cluster-name>` and leaving Pod
 ```json
 {
   "Version": "2012-10-17",
-  "Statement": [{
-    "Effect": "Allow",
-    "Principal": { "Service": "pods.eks.amazonaws.com" },
-    "Action": ["sts:AssumeRole", "sts:TagSession"],
-    "Condition": {
-      "StringEquals": {
-        "aws:RequestTag/eks-cluster-name": "<cluster-name>",
-        "aws:RequestTag/kubernetes-namespace": "external-secrets",
-        "aws:RequestTag/kubernetes-service-account": "external-secrets"
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": { "Service": "pods.eks.amazonaws.com" },
+      "Action": ["sts:AssumeRole", "sts:TagSession"],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestTag/eks-cluster-name": "<cluster-name>",
+          "aws:RequestTag/kubernetes-namespace": "external-secrets",
+          "aws:RequestTag/kubernetes-service-account": "external-secrets"
+        }
       }
     }
-  }]
+  ]
 }
 ```
 
@@ -52,9 +54,9 @@ Find the ARNs needed by each operator without retrieving secret values:
 
 ```sh
 aws secretsmanager describe-secret --region eu-west-2 \
-  --secret-id /k8s-books/prod/auth --query ARN --output text
+  --secret-id /books/prod/auth --query ARN --output text
 aws secretsmanager describe-secret --region eu-west-2 \
-  --secret-id /k8s-books/preview/auth --query ARN --output text
+  --secret-id /books/preview/auth --query ARN --output text
 aws secretsmanager describe-secret --region eu-west-2 \
   --secret-id /github/danwiltshire/app/danforge-argocd/private-key --query ARN --output text
 aws secretsmanager describe-secret --region eu-west-2 \
@@ -68,11 +70,13 @@ Attach this permissions policy to each role, replacing the placeholders with the
 ```json
 {
   "Version": "2012-10-17",
-  "Statement": [{
-    "Effect": "Allow",
-    "Action": "secretsmanager:GetSecretValue",
-    "Resource": ["<required-secret-arn>", "<additional-required-secret-arn>"]
-  }]
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": "secretsmanager:GetSecretValue",
+      "Resource": ["<required-secret-arn>", "<additional-required-secret-arn>"]
+    }
+  ]
 }
 ```
 
@@ -140,17 +144,17 @@ different default. Webhooks can trigger earlier refreshes; Git revision caching
 can also delay discovery. Generated Applications have a separate reconciliation
 interval.
 
-The books image repository is configured in `apps/k8s-books/values.yaml`. Production selects its image with `imageTag` in `apps/k8s-books/envs/prod.yaml`; update it to a published tag to deploy another version. To render a preview locally, supply the values normally provided by the ApplicationSet:
+The books image repository is configured in `apps/books/values.yaml`. Production selects its image with `imageTag` in `apps/books/envs/prod.yaml`; update it to a published tag to deploy another version. To render a preview locally, supply the values normally provided by the ApplicationSet:
 
 ```sh
-helm dependency build apps/k8s-books
-helm template books apps/k8s-books -f apps/k8s-books/envs/preview.yaml \
-  --set imageTag=f6775c6 --set domainName=k8s-books-123.preview.danforge.net
+helm dependency build apps/books
+helm template books apps/books -f apps/books/envs/preview.yaml \
+  --set imageTag=f6775c6 --set domainName=books-123.preview.danforge.net
 ```
 
-Install External Secrets Operator and its CRDs via the Helmfile before syncing books. Create the JSON secrets `/k8s-books/prod/auth` for production and `/k8s-books/preview/auth` for previews, and grant the corresponding operator access as described above. The operator extracts their top-level keys into a `books-auth` Kubernetes Secret in each application's namespace every 30 seconds. Use keys valid for Kubernetes Secret keys and environment variables, with string values. The books Deployment requires that Secret and imports all keys using `envFrom`; Reloader triggers a rolling restart when the Secret data changes. Pods cannot start until the Secret is synchronized. The interval is a polling target, not a 30-second restart guarantee; intermediate versions can be missed if updates occur between polls.
+Install External Secrets Operator and its CRDs via the Helmfile before syncing books. Create the JSON secrets `/books/prod/auth` for production and `/books/preview/auth` for previews, and grant the corresponding operator access as described above. The operator extracts their top-level keys into a `books-auth` Kubernetes Secret in each application's namespace every 30 seconds. Use keys valid for Kubernetes Secret keys and environment variables, with string values. The books Deployment requires that Secret and imports all keys using `envFrom`; Reloader triggers a rolling restart when the Secret data changes. Pods cannot start until the Secret is synchronized. The interval is a polling target, not a 30-second restart guarantee; intermediate versions can be missed if updates occur between polls.
 
-All three ApplicationSets ignore Reloader's pod-template annotation when comparing workloads. This does not make Argo CD respect ignored fields during sync; verify the rollout annotation survives syncs in the managed capability. Reloader also resynchronizes watched workloads on leader restart, which can cause additional rollouts. Check synchronization without printing secret values using `kubectl --context <prod-context> get externalsecret books-auth -n k8s-books-prod` and check the rollout using `kubectl --context <prod-context> rollout status deployment/books-deployment -n k8s-books-prod`.
+All three ApplicationSets ignore Reloader's pod-template annotation when comparing workloads. This does not make Argo CD respect ignored fields during sync; verify the rollout annotation survives syncs in the managed capability. Reloader also resynchronizes watched workloads on leader restart, which can cause additional rollouts. Check synchronization without printing secret values using `kubectl --context <prod-context> get externalsecret books-auth -n books-prod` and check the rollout using `kubectl --context <prod-context> rollout status deployment/books-deployment -n books-prod`.
 
 ## Developing
 
