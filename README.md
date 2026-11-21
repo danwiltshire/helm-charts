@@ -96,6 +96,8 @@ The controller's role is shared across stores it reconciles. Restrict who can cr
 
 ## Deploying applications with Argo CD
 
+The cluster-resources chart contains a combined static-environments ApplicationSet. Do not deploy it alongside the existing prod and nonprod ApplicationSets: they generate the same Application names. Migrating requires a deliberate ownership handoff that preserves the existing Applications and workloads, and an Argo CD installation with both destinations registered.
+
 Apply each ApplicationSet to the Argo CD installation that should manage its destination. The sets use fixed destination names: `prod` for production and preview applications, and `nonprod` for other non-production applications.
 
 ```sh

@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
-  name: nonprod-environments
+  name: static-environments
   namespace: argocd
 spec:
   goTemplate: true
@@ -11,17 +11,29 @@ spec:
       repoURL: https://github.com/danwiltshire/helm-charts.git
       revision: HEAD
       files:
+      # Only prod.yaml creates an Application targeting the prod cluster.
+      - path: apps/*/envs/prod.yaml
+      values:
+        app: '{{`{{index .path.segments 1}}`}}'
+        env: prod
+        destination: prod
+  - git:
+      repoURL: https://github.com/danwiltshire/helm-charts.git
+      revision: HEAD
+      files:
+      # Other environment files target nonprod; preview has its own ApplicationSet.
       - path: apps/*/envs/*.yaml
       - path: apps/*/envs/prod.yaml
         exclude: true
       - path: apps/*/envs/preview.yaml
         exclude: true
       values:
-        app: '{{index .path.segments 1}}'
-        env: '{{trimSuffix ".yaml" .path.filename}}'
+        app: '{{`{{index .path.segments 1}}`}}'
+        env: '{{`{{trimSuffix ".yaml" .path.filename}}`}}'
+        destination: nonprod
   template:
     metadata:
-      name: '{{.values.app}}-{{.values.env}}'
+      name: '{{`{{.values.app}}-{{.values.env}}`}}'
     spec:
       project: default
       ignoreDifferences:
@@ -40,13 +52,13 @@ spec:
       source:
         repoURL: https://github.com/danwiltshire/helm-charts.git
         targetRevision: HEAD
-        path: 'apps/{{.values.app}}'
+        path: 'apps/{{`{{.values.app}}`}}'
         helm:
           valueFiles:
-          - 'envs/{{.values.env}}.yaml'
+          - 'envs/{{`{{.values.env}}`}}.yaml'
       destination:
-        name: nonprod
-        namespace: '{{.values.app}}-{{.values.env}}'
+        name: '{{`{{.values.destination}}`}}'
+        namespace: '{{`{{.values.app}}-{{.values.env}}`}}'
       syncPolicy:
         automated:
           prune: true

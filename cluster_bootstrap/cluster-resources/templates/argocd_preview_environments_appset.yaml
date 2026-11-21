@@ -15,24 +15,24 @@ spec:
           files:
           - path: apps/*/envs/preview.yaml
           values:
-            app: '{{index .path.segments 1}}'
+            app: '{{`{{index .path.segments 1}}`}}'
       # Assumes each app's source repo is named after its directory under apps/.
       - pullRequest:
           github:
             owner: danwiltshire
-            repo: '{{.values.app}}'
+            repo: '{{`{{.values.app}}`}}'
             appSecretName: argocd-github-app
             labels:
             - preview
   template:
     metadata:
-      name: '{{.values.app}}-pr-{{.number}}'
+      name: '{{`{{.values.app}}-pr-{{.number}}`}}'
       finalizers:
       - resources-finalizer.argocd.argoproj.io
       annotations:
-        danforge.net/preview-repository: 'https://github.com/danwiltshire/{{.values.app}}'
-        danforge.net/preview-sha: '{{.head_sha}}'
-        danforge.net/preview-url: 'https://{{.values.app}}-{{.number}}.preview.danforge.net'
+        danforge.net/preview-repository: 'https://github.com/danwiltshire/{{`{{.values.app}}`}}'
+        danforge.net/preview-sha: '{{`{{.head_sha}}`}}'
+        danforge.net/preview-url: 'https://{{`{{.values.app}}-{{.number}}`}}.preview.danforge.net'
         notifications.argoproj.io/subscribe.preview-creating.github: ""
         notifications.argoproj.io/subscribe.preview-ready.github: ""
         notifications.argoproj.io/subscribe.preview-failed.github: ""
@@ -53,24 +53,24 @@ spec:
         jsonPointers:
         - /spec/template/metadata/annotations/reloader.stakater.com~1last-reloaded-from
       sources:
-      - repoURL: 'https://github.com/danwiltshire/{{.values.app}}.git'
-        targetRevision: '{{.head_sha}}'
+      - repoURL: 'https://github.com/danwiltshire/{{`{{.values.app}}`}}.git'
+        targetRevision: '{{`{{.head_sha}}`}}'
         ref: app
       - repoURL: https://github.com/danwiltshire/helm-charts.git
         targetRevision: HEAD
-        path: 'apps/{{.values.app}}'
+        path: 'apps/{{`{{.values.app}}`}}'
         helm:
           valueFiles:
           - envs/preview.yaml
           parameters:
           - name: domainName
-            value: '{{.values.app}}-{{.number}}.preview.danforge.net'
+            value: '{{`{{.values.app}}-{{.number}}`}}.preview.danforge.net'
           - name: imageTag
-            value: '{{.head_sha | trunc 7}}'
+            value: '{{`{{.head_sha | trunc 7}}`}}'
             forceString: true
       destination:
         name: prod
-        namespace: '{{.values.app}}-pr-{{.number}}'
+        namespace: '{{`{{.values.app}}-pr-{{.number}}`}}'
       syncPolicy:
         automated:
           prune: true
