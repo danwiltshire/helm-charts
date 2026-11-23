@@ -1,9 +1,9 @@
 # yaml-language-server: $schema=../values.schema.json
 domainName: orders.danforge.net
 api:
-  imageTag: "api-851496b"
+  imageTag: "api-api-851496b"
 ui:
-  imageTag: "ui-851496b"
+  imageTag: "ui-ui-851496b"
 awsSecrets:
   - secretName: /orders/prod/database
     region: eu-west-2
