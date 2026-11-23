@@ -6,5 +6,3 @@ awsSecrets:
     region: eu-west-2
     label: books-auth
     json: true
-celery:
-  imageTag: "7da0ca8"
