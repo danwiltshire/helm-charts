@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=values.schema.json
+# -- ECR repository for the API and UI images.
+imageRepository: "426576223955.dkr.ecr.eu-west-2.amazonaws.com/orders"
+api:
+  # -- Full image tag for the orders, catalog, and worker workloads, including the api- prefix.
+  imageTag: ""
+ui:
+  # -- Full UI image tag, including the ui- prefix.
+  imageTag: ""
+# -- Public hostname for the API ingress.
+domainName: ""
+# -- PostgreSQL image, pinned to a multi-platform digest.
+postgresImage: "postgres:17-alpine@sha256:f9cf3e1f0066f0eb0c48707d864f0ac5941e9ff454a072077d97a4d278d07d73"
+# -- RabbitMQ image, pinned to a multi-platform digest.
+rabbitmqImage: "rabbitmq:4-alpine@sha256:3dbd31cb9e4d45dac44de7b73cc45b848028494e98bcab71477386cbd4dc7f56"
+# -- PostgreSQL persistent volume size.
+postgresStorage: "8Gi"
+# -- RabbitMQ persistent volume size.
+rabbitmqStorage: "2Gi"
+# -- AWS Secrets Manager secrets to synchronize; labels are Kubernetes Secret names.
+awsSecrets: []

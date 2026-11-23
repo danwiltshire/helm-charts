@@ -1,0 +1,9 @@
+apiVersion: v2
+name: orders
+description: Orders demo application
+type: application
+version: 0.1.0
+dependencies:
+  - name: aws-secrets
+    version: 0.1.0
+    repository: file://../../library_charts/aws-secrets

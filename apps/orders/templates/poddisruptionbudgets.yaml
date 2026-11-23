@@ -1,0 +1,12 @@
+{{- range $role := list "orders" "catalog" "worker" "ui" "postgres" "rabbitmq" }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: orders-{{ $role }}
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: orders-{{ $role }}
+{{- end }}

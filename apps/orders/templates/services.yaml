@@ -1,0 +1,46 @@
+{{- range $role := list "orders" "catalog" }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: orders-{{ $role }}
+  annotations:
+    alb.ingress.kubernetes.io/healthcheck-path: /healthz/ready
+spec:
+  selector:
+    app: orders-{{ $role }}
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
+{{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: orders-postgres
+  annotations:
+    alb.ingress.kubernetes.io/healthcheck-path: /healthz/ready
+spec:
+  clusterIP: None
+  selector:
+    app: orders-postgres
+  ports:
+    - name: postgres
+      port: 5432
+      targetPort: postgres
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: orders-rabbitmq
+  annotations:
+    alb.ingress.kubernetes.io/healthcheck-path: /healthz/ready
+spec:
+  clusterIP: None
+  selector:
+    app: orders-rabbitmq
+  ports:
+    - name: amqp
+      port: 5672
+      targetPort: amqp
