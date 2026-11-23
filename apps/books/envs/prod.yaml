@@ -1,11 +1,10 @@
 # yaml-language-server: $schema=../values.schema.json
 domainName: books.danforge.net
-imageTag: "d7260b4"
+imageTag: "7da0ca8"
 awsSecrets:
   - secretName: /books/prod/auth
     region: eu-west-2
     label: books-auth
     json: true
-
 celery:
-  imageTag: "abc"
+  imageTag: "7da0ca8"
