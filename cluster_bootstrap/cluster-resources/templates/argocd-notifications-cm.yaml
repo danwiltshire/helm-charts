@@ -36,14 +36,7 @@ data:
         content: |
           ## :rocket: Preview Environment Creating
 
-          | Type | URL |
-          | --- | --- |
-          {{`{{- range .app.status.summary.externalURLs }}`}}
-          | Preview | <{{`{{ call $.strings.ReplaceAll . "http://" "https://" }}`}}> |
-          {{`{{- else }}`}}
-          | Preview | <{{`{{ index .app.metadata.annotations "danforge.net/preview-url" }}`}}> |
-          {{`{{- end }}`}}
-          | Argo CD | [View application]({{`{{ .context.argocdUrl }}`}}/applications/{{`{{ .app.metadata.name }}`}}) |
+          The preview environment is being created. [View in Argo CD]({{`{{ .context.argocdUrl }}`}}/applications/{{`{{ .app.metadata.name }}`}}).
   template.preview-ready: |
     github:
       repoURLPath: '{{`{{ index .app.metadata.annotations "danforge.net/preview-repository" }}`}}'
