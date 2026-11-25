@@ -1,8 +1,9 @@
 # Ingress library chart
 
 This library renders one ALB Ingress with the repository's required listener,
-redirect and TLS annotations. Add `common` and `ingress` as direct application
-dependencies, then include `ingress.resources` from an application template.
+redirect and TLS annotations. Add `ingress` and make `common` available as a
+direct or transitive application dependency, then include `ingress.resources`
+from an application template.
 The Ingress uses the Helm fullname convention and common labels with component
 `ingress`.
 

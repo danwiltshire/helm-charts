@@ -1,3 +1,3 @@
 .DS_Store
-apps/*/charts/*.tgz
+**/charts/*.tgz
 __pycache__/

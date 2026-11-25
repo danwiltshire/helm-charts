@@ -4,10 +4,6 @@ description: Stock application
 type: application
 version: 0.1.0
 dependencies:
-  # TODO: Can common be a dependency of the bottom 2 instead?
-  - name: common
-    version: 0.1.0
-    repository: file://../../library_charts/common
   - name: http-workload
     version: 0.1.0
     repository: file://../../library_charts/http-workload

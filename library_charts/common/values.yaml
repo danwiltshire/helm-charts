@@ -1,1 +1,11 @@
-{}
+# @schema
+# type: string
+# description: Override the chart name used when generating resource names.
+# @schema
+nameOverride: ""
+
+# @schema
+# type: string
+# description: Override the generated base resource name.
+# @schema
+fullnameOverride: ""
