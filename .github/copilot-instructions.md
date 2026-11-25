@@ -23,6 +23,7 @@ This repository contains Helm charts for applications and cluster resources, Arg
 - Follow organisational standards. The repository's pre-commit hooks enforce these standards using Kyverno, including requirements such as specific annotations on Service resources.
 - Write Kyverno CEL expressions using optional field/map access (`.?field`, `[?key]`) with `.hasValue()` for presence checks and `.orValue(default)` for comparisons. For nested optional fields, chain selectors and apply `.orValue(default)` at the end (for example, `container.?lifecycle.?preStop.?sleep.?seconds.orValue(0)`) instead of adding fallback maps at each level. Prefer this over separate existence checks followed by lookups; choose defaults that make missing values fail required-value checks.
 - Before implementing chart functionality, read the contents of `library_charts/`. If a library chart may provide functionality that can be reused, ask the user before proceeding with a new implementation.
+- Library charts should default to empty collections in `values.yaml` rather than example application values, and define their values schema using `helm-schema` annotations. Put usage examples in the chart README.
 
 ## Project structure
 

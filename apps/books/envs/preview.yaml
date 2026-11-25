@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=../values.schema.json
+# yaml-language-server: $schema=../values.env.schema.json
 awsSecrets:
   - secretName: /books/preview/auth
     region: eu-west-2

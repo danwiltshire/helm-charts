@@ -1,0 +1,33 @@
+# @schema
+# type: object
+# required: [paths]
+# properties:
+#   internetFacing:
+#     type: boolean
+#     default: false
+#     title: internetFacing
+#     description: Use the internet-facing ALB ingress class instead of the internal class.
+#   domainName:
+#     type: string
+#     default: ""
+#     title: domainName
+#     description: Hostname for the ingress; empty permits hostless routing.
+#   paths:
+#     type: array
+#     title: paths
+#     description: Routes to Services named `<release>-<serviceName>`.
+#     minItems: 1
+#     items:
+#       type: object
+#       required: [path, serviceName, servicePort]
+#       properties:
+#         path: {type: string, pattern: '^/', description: URL path to match.}
+#         pathType: {type: string, enum: [Prefix, Exact, ImplementationSpecific], description: Kubernetes path matching mode.}
+#         serviceName:
+#           type: string
+#           pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])?$'
+#           description: Service name suffix appended to the release name.
+#         servicePort: {type: integer, minimum: 1, maximum: 65535, description: Port exposed by the Service.}
+# @schema
+# -- ALB ingress configuration.
+ingress: {}

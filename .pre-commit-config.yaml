@@ -1,12 +1,13 @@
 ---
 repos:
-  - repo: https://github.com/norwoodj/helm-docs
-    rev:  "v1.14.2"
+  - repo: local
     hooks:
-      - id: helm-docs
-        args:
-          # Make the tool search for charts only under the `apps` directory
-          - --chart-search-root=apps
+      - id: helm-dependencies
+        name: prepare Helm dependencies
+        entry: bash scripts/build-chart-dependencies.sh
+        language: system
+        pass_filenames: false
+        always_run: true
 
   - repo: https://github.com/dadav/helm-schema
     rev: 0.24.0
@@ -17,8 +18,16 @@ repos:
           - --chart-search-root=apps
           - --keep-existing-dep-schemas
           - --add-schema-reference
-          # Environment overrides are partial and may define additional values.
-          - --skip-auto-generation=additionalProperties,required
+          - --skip-auto-generation=additionalProperties
+
+  - repo: local
+    hooks:
+      - id: env-schema
+        name: generate environment override schemas
+        entry: python3 scripts/generate_env_schema.py
+        language: system
+        pass_filenames: false
+        always_run: true
 
   - repo: https://github.com/gruntwork-io/pre-commit
     rev: v0.1.30
@@ -28,7 +37,7 @@ repos:
   - repo: local
     hooks:
       - id: env-schema-reference
-        name: add schema reference to env values files
+        name: update schema reference in env values files
         entry: scripts/add-env-schema-reference.sh
         language: script
         files: ^apps/[^/]+/envs/[^/]+\.ya?ml$

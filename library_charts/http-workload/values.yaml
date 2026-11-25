@@ -1,0 +1,69 @@
+# @schema
+# type: object
+# description: Named stateless HTTP workloads.
+# propertyNames:
+#   pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])?$'
+# additionalProperties:
+#   type: object
+#   description: Configuration for one named HTTP workload.
+#   required: [image, port]
+#   properties:
+#     image:
+#       type: object
+#       description: Container image; specify a tag, a digest, or both.
+#       required: [repository]
+#       anyOf:
+#         - required: [tag]
+#         - required: [digest]
+#       properties:
+#         repository: {type: string, minLength: 1, description: Container image repository.}
+#         tag: {type: string, minLength: 1, description: Container image tag.}
+#         digest: {type: string, pattern: '^sha256:[a-f0-9]{64}$', description: SHA-256 container image digest.}
+#     port: {type: integer, minimum: 1, maximum: 65535, description: Container HTTP port.}
+#     replicas: {type: integer, minimum: 1, description: Number of replicas; defaults to 2.}
+#     partOf:
+#       type: string
+#       description: Application group label; defaults to the chart name.
+#       minLength: 1
+#       maxLength: 63
+#       pattern: '^[A-Za-z0-9]([-A-Za-z0-9_.]*[A-Za-z0-9])?$'
+#     service:
+#       type: object
+#       description: ClusterIP Service settings.
+#       properties:
+#         enabled: {type: boolean, description: Create the Service; defaults to true.}
+#         port: {type: integer, minimum: 1, maximum: 65535, description: Service port; defaults to the container port.}
+#         annotations: {type: object, additionalProperties: {type: string}, description: Service annotations; the ALB health-check path follows readiness.}
+#     args: {type: array, items: {type: string}, description: Container command arguments.}
+#     env: {type: array, items: {type: object}, description: Container environment variables in Kubernetes EnvVar format.}
+#     envFrom: {type: array, items: {type: object}, description: Container environment sources in Kubernetes EnvFromSource format.}
+#     annotations: {type: object, additionalProperties: {type: string}, description: Deployment annotations.}
+#     podAnnotations: {type: object, additionalProperties: {type: string}, description: Pod template annotations.}
+#     labels: {type: object, additionalProperties: {type: string}, description: Additional resource and pod labels; standard labels take precedence.}
+#     resources: {type: object, description: Container resource requests and limits.}
+#     podSecurityContext: {type: object, description: Pod security context overrides.}
+#     securityContext: {type: object, description: Container security context overrides.}
+#     nodeSelector: {type: object, additionalProperties: {type: string}, description: Node labels required for scheduling.}
+#     tolerations: {type: array, items: {type: object}, description: Pod scheduling tolerations.}
+#     affinity: {type: object, description: Pod affinity rules; replaces the default anti-affinity.}
+#     readinessProbe:
+#       type: object
+#       description: HTTP readiness probe overrides; defaults to /healthz/ready.
+#       not: {anyOf: [{required: [exec]}, {required: [tcpSocket]}, {required: [grpc]}]}
+#       properties:
+#         httpGet:
+#           type: object
+#           description: HTTP request used for readiness checks.
+#           properties:
+#             path: {type: string, pattern: '^/', description: Readiness path; also used for the ALB health check.}
+#     livenessProbe:
+#       type: object
+#       description: HTTP liveness probe overrides; defaults to /healthz/live.
+#       not: {anyOf: [{required: [exec]}, {required: [tcpSocket]}, {required: [grpc]}]}
+#     startupProbe:
+#       type: object
+#       description: HTTP startup probe overrides; disabled unless configured.
+#       not: {anyOf: [{required: [exec]}, {required: [tcpSocket]}, {required: [grpc]}]}
+# @schema
+# -- Named stateless HTTP workloads.
+httpWorkloads: {}

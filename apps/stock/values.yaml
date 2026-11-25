@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=values.schema.json
+ingress:
+  internetFacing: false
+  domainName: ""
+  paths:
+    - path: /
+      pathType: Prefix
+      serviceName: stock
+      servicePort: 3000
+
+httpWorkloads:
+  stock:
+    image:
+      repository: "426576223955.dkr.ecr.eu-west-2.amazonaws.com/stock"
+      tag: "latest"
+    port: 3000
+    nodeSelector:
+      kubernetes.io/arch: arm64

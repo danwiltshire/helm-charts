@@ -77,6 +77,10 @@
       "type": "string"
     }
   },
-  "required": [],
+  "required": [
+    "imageRepository",
+    "imageTag",
+    "awsSecrets"
+  ],
   "type": "object"
 }

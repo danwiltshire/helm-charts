@@ -1,0 +1,12 @@
+dependencies:
+- name: common
+  repository: file://../../library_charts/common
+  version: 0.1.0
+- name: http-workload
+  repository: file://../../library_charts/http-workload
+  version: 0.1.0
+- name: ingress
+  repository: file://../../library_charts/ingress
+  version: 0.1.0
+digest: sha256:efd4b3a02c23002dc80fffdea9708820159517700bd4ba649c30c47d84049943
+generated: "2026-11-25T18:21:32.307015Z"
