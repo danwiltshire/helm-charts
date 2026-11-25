@@ -274,7 +274,7 @@
           "type": "boolean"
         },
         "paths": {
-          "description": "Routes to Services named `\u003crelease\u003e-\u003cserviceName\u003e`.",
+          "description": "Routes to Services named with the Helm fullname convention.",
           "items": {
             "properties": {
               "path": {
@@ -292,7 +292,7 @@
                 "type": "string"
               },
               "serviceName": {
-                "description": "Service name suffix appended to the release name.",
+                "description": "Workload key; the chart name uses the fullname as-is, other keys are appended.",
                 "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$",
                 "type": "string"
               },

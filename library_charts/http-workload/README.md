@@ -53,11 +53,13 @@ httpWorkloads:
       enabled: false
 ```
 
-Each resource is named `<release>-<workload>`. The combined name must be a DNS
-label of at most 63 characters. These names and the instance/component selector
-labels are part of the interface: changing them on an existing Deployment can
-require a migration. Refer to the Service by this name from a separately managed
-Ingress. An empty `httpWorkloads` map renders nothing.
+Each resource uses the Helm fullname convention: a workload key matching the
+chart name uses the fullname as-is, while other workload keys are appended to
+it (for example, `stock-prod` and `stock-prod-worker`). Generated names must be
+DNS labels of at most 63 characters. These names and the instance/component
+selector labels are part of the interface: changing them on an existing
+Deployment can require a migration. Refer to the Service by this name from a
+separately managed Ingress. An empty `httpWorkloads` map renders nothing.
 
 Use an image tag, a `sha256` digest, or both. Pin images to an appropriate
 version or digest rather than `latest`. `port` is the container's HTTP port;

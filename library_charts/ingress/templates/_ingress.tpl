@@ -6,7 +6,7 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: {{ .Chart.Name | quote }}
+  name: {{ include "common.fullname" (dict "root" .) | quote }}
   labels:
     {{- include "common.labels" (dict "root" . "name" "ingress") | nindent 4 }}
   annotations:
@@ -21,9 +21,9 @@ spec:
           {{- range $index, $route := $paths }}
           {{- $path := required (printf "ingress.paths[%d].path is required" $index) $route.path }}
           {{- $serviceName := required (printf "ingress.paths[%d].serviceName is required" $index) $route.serviceName }}
-          {{- $serviceName = printf "%s-%s" $root.Release.Name $serviceName }}
+          {{- $serviceName = include "common.fullname" (dict "root" $root "name" $serviceName) }}
           {{- if or (gt (len $serviceName) 63) (not (regexMatch "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$" $serviceName)) }}
-          {{- fail (printf "ingress.paths[%d].serviceName: release name and service name must form a DNS label of at most 63 characters" $index) }}
+          {{- fail (printf "ingress.paths[%d].serviceName: generated Service name must be a DNS label of at most 63 characters" $index) }}
           {{- end }}
           - path: {{ $path | quote }}
             pathType: {{ $route.pathType | default "Prefix" | quote }}

@@ -1,7 +1,7 @@
 {{- define "http-workload.name" -}}
-{{- $resourceName := printf "%s-%s" .root.Release.Name .name -}}
+{{- $resourceName := include "common.fullname" (dict "root" .root "name" .name) -}}
 {{- if or (gt (len $resourceName) 63) (not (regexMatch "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$" $resourceName)) -}}
-{{- fail (printf "httpWorkloads.%s: release name and workload name must form a DNS label of at most 63 characters" .name) -}}
+{{- fail (printf "httpWorkloads.%s: generated resource name must be a DNS label of at most 63 characters" .name) -}}
 {{- end -}}
 {{- $resourceName -}}
 {{- end }}
