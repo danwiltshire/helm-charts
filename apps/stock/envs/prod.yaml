@@ -1,7 +1,7 @@
 # yaml-language-server: $schema=../values.env.schema.json
 ingress:
-  internetFacing: false
-  domainName: stock.int.danforge.net
+  internetFacing: true
+  domainName: stock.danforge.net
 httpWorkloads:
   stock:
     image:
