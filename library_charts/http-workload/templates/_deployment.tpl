@@ -17,7 +17,6 @@
   "limits" (dict "cpu" "1" "memory" "512Mi")
 -}}
 {{- $podSecurity := dict
-  "runAsNonRoot" true
   "seccompProfile" (dict "type" "RuntimeDefault")
 -}}
 {{- $security := dict

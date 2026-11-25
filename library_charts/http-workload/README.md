@@ -85,11 +85,11 @@ seconds to meet the cluster policy, and termination grace is 30 seconds.
 Each workload defaults to two replicas and a PDB with `minAvailable: 1`.
 Choosing one replica prevents voluntary disruptions until another pod is
 available. Resource requests and limits have conservative defaults, but must be
-tuned for the application. The default security contexts run as non-root with
-a read-only root filesystem and dropped capabilities; use `podSecurityContext`
-or `securityContext` to adjust them for the image. `nodeSelector`, `tolerations`
-and `affinity` can be provided for scheduling. By default, pods prefer different
-nodes; supplying `affinity` replaces that default.
+tuned for the application. The default security contexts use a read-only root
+filesystem and drop all capabilities, but do not enforce a non-root user. Use
+`podSecurityContext` or `securityContext` to adjust them for the image.
+`nodeSelector`, `tolerations` and `affinity` can be provided for scheduling. By
+default, pods prefer different nodes; supplying `affinity` replaces that default.
 
 `env` and `envFrom` use Kubernetes container syntax; secret creation remains a
 separate capability. `annotations` apply to the Deployment, `podAnnotations`
