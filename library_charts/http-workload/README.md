@@ -10,6 +10,9 @@ Add the library to the consuming application's `Chart.yaml`:
 
 ```yaml
 dependencies:
+  - name: common
+    version: 0.1.0
+    repository: file://../../library_charts/common
   - name: http-workload
     version: 0.1.0
     repository: file://../../library_charts/http-workload
@@ -98,8 +101,7 @@ labels are controlled by the library. `partOf` sets the
 defaults to the consuming chart's name.
 
 The map values and field types are annotated in `values.yaml` for the
-repository's `helm-schema` hook. Rebuild the library's dependencies before the
-application's dependencies, then regenerate its `values.schema.json` and validate
-the final merged application and environment values. The repository's
-pre-commit dependency hook performs the builds in that order. Library templates
-do not independently apply that parent schema to values passed to a helper.
+repository's `helm-schema` hook. Rebuild the application's dependencies before
+regenerating its `values.schema.json`, and validate the final merged application
+and environment values. Library templates do not independently apply that
+parent schema to values passed to a helper.
