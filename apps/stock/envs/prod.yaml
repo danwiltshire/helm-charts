@@ -2,8 +2,7 @@
 ingress:
   internetFacing: true
   domainName: stock.danforge.net
-
 httpWorkloads:
   stock:
     image:
-      tag: "6f5668f"
+      tag: "070b46f"
