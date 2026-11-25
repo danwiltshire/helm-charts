@@ -65,16 +65,112 @@
       "title": "global",
       "type": "object"
     },
-    "imageRepository": {
-      "default": "426576223955.dkr.ecr.eu-west-2.amazonaws.com/books",
-      "description": "yaml-language-server: $schema=values.schema.json",
-      "title": "imageRepository",
-      "type": "string"
+    "webIngresses": {
+      "description": "Ingresses; each routes to the Service `\u003cname\u003e-service` created by the web-workload library chart.",
+      "items": {
+        "properties": {
+          "className": {
+            "type": "string"
+          },
+          "host": {
+            "type": "string"
+          },
+          "name": {
+            "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$",
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "port": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "type": "object"
+      },
+      "title": "webIngresses",
+      "type": "array"
     },
-    "imageTag": {
-      "default": "",
-      "title": "imageTag",
-      "type": "string"
+    "webWorkloads": {
+      "description": "Web workloads; each renders a Deployment, Service and PodDisruptionBudget.",
+      "items": {
+        "properties": {
+          "arch": {
+            "enum": [
+              "arm64",
+              "amd64"
+            ],
+            "type": "string"
+          },
+          "env": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "required": [],
+            "type": "object"
+          },
+          "envFromSecrets": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "healthcheck": {
+            "properties": {
+              "livePath": {
+                "type": "string"
+              },
+              "readyPath": {
+                "type": "string"
+              }
+            },
+            "required": [],
+            "type": "object"
+          },
+          "image": {
+            "properties": {
+              "repository": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "tag": {
+                "minLength": 1,
+                "type": "string"
+              }
+            },
+            "required": [
+              "repository",
+              "tag"
+            ],
+            "type": "object"
+          },
+          "name": {
+            "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$",
+            "type": "string"
+          },
+          "port": {
+            "type": "integer"
+          },
+          "replicas": {
+            "minimum": 2,
+            "type": "integer"
+          },
+          "resources": {
+            "required": [],
+            "type": "object"
+          }
+        },
+        "required": [
+          "name",
+          "image"
+        ],
+        "type": "object"
+      },
+      "title": "webWorkloads",
+      "type": "array"
     }
   },
   "required": [],

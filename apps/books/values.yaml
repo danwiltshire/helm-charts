@@ -1,5 +1,13 @@
 # yaml-language-server: $schema=values.schema.json
-imageRepository: "426576223955.dkr.ecr.eu-west-2.amazonaws.com/books"
-imageTag: ""
+# -- Web workloads rendered by the web-workload library chart.
+webWorkloads:
+  - name: books
+    image:
+      repository: "426576223955.dkr.ecr.eu-west-2.amazonaws.com/books"
+      tag: "latest"
+    envFromSecrets:
+      - books-auth
+# -- Ingresses rendered by the web-ingress library chart.
+webIngresses: []
 # -- AWS Secrets Manager secrets to synchronize; labels are Kubernetes Secret names.
 awsSecrets: []

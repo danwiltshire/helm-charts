@@ -1,0 +1,47 @@
+# @schema
+# type: array
+# description: Web workloads; each renders a Deployment, Service and PodDisruptionBudget.
+# items:
+#   type: object
+#   properties:
+#     name:
+#       type: string
+#       pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])?$'
+#     image:
+#       type: object
+#       properties:
+#         repository:
+#           type: string
+#           minLength: 1
+#         tag:
+#           type: string
+#           minLength: 1
+#       required: [repository, tag]
+#     port:
+#       type: integer
+#     replicas:
+#       type: integer
+#       minimum: 2
+#     arch:
+#       type: string
+#       enum: [arm64, amd64]
+#     envFromSecrets:
+#       type: array
+#       items:
+#         type: string
+#     env:
+#       type: object
+#       additionalProperties:
+#         type: string
+#     resources:
+#       type: object
+#     healthcheck:
+#       type: object
+#       properties:
+#         livePath:
+#           type: string
+#         readyPath:
+#           type: string
+#   required: [name, image]
+# @schema
+webWorkloads: []

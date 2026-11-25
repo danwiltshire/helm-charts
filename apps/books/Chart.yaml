@@ -4,6 +4,12 @@ description: Books application
 type: application
 version: 0.1.0
 dependencies:
+  - name: web-workload
+    version: 0.1.0
+    repository: file://../../library_charts/web-workload
+  - name: web-ingress
+    version: 0.1.0
+    repository: file://../../library_charts/web-ingress
   - name: aws-secrets
     version: 0.1.0
     repository: file://../../library_charts/aws-secrets

@@ -1,0 +1,20 @@
+# @schema
+# type: array
+# description: Ingresses; each routes to the Service `<name>-service` created by the web-workload library chart.
+# items:
+#   type: object
+#   properties:
+#     name:
+#       type: string
+#       pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])?$'
+#     port:
+#       type: integer
+#     host:
+#       type: string
+#     path:
+#       type: string
+#     className:
+#       type: string
+#   required: [name]
+# @schema
+webIngresses: []

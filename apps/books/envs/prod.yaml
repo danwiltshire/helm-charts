@@ -1,6 +1,14 @@
 # yaml-language-server: $schema=../values.schema.json
-domainName: books.danforge.net
-imageTag: "3d00563"
+webWorkloads:
+  - name: books
+    image:
+      repository: "426576223955.dkr.ecr.eu-west-2.amazonaws.com/books"
+      tag: "3d00563"
+    envFromSecrets:
+      - books-auth
+webIngresses:
+  - name: books
+    host: books.danforge.net
 awsSecrets:
   - secretName: /books/prod/auth
     region: eu-west-2
