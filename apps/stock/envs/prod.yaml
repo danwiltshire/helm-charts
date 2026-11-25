@@ -5,4 +5,4 @@ ingress:
 httpWorkloads:
   stock:
     image:
-      tag: "070b46f"
+      tag: "708e1df"
